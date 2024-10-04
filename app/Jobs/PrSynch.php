@@ -19,7 +19,8 @@ class PrSynch implements ShouldQueue
 
     public function handle(): void
     {
-        $requestResponse = Http::get('https://api.github.com/repos/laravel/laravel/pulls?state=all&page=' . $this->page);
+        $url = 'https://api.github.com/repos/laravel/laravel/pulls?state=all&page=';
+        $requestResponse = Http::get($url . $this->page);
 
         $request = $requestResponse->json();
 
@@ -28,16 +29,7 @@ class PrSynch implements ShouldQueue
         }
 
             foreach ($request as $pr) {
-                PullRequests::create([
-                    'api_id' => $pr['id'],
-                    'api_number' => $pr['number'],
-                    'state' => $pr['state'],
-                    'title' => $pr['title'],
-                    'api_created_at' => Carbon::parse($pr['created_at'])->format('Y-m-d H:i:s'),
-                    'api_updated_at' => Carbon::parse($pr['updated_at'])->format('Y-m-d H:i:s'),
-                    'api_closed_at' => Carbon::parse($pr['closed_at'])->format('Y-m-d H:i:s'),
-                    'api_merged_at' => Carbon::parse($pr['merged_at'])->format('Y-m-d H:i:s'),
-                ]);
+                PullRequestStore::dispatch($pr);
             }
             PrSynch::dispatch($this->page + 1);
     }
