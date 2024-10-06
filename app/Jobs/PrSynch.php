@@ -32,7 +32,7 @@ class PrSynch implements ShouldQueue
             foreach ($request as $pullrequests) {
                 PullRequestStore::dispatch($pullrequests);
             }
-        //the parameter PAGE, that we can sync every page listed
+        //increase the page with the parameter PAGE, so we can sync every page listed
         PrSynch::dispatch($this->page + 1);
     }
 
