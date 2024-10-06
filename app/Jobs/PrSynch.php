@@ -2,8 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\PullRequests;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -12,26 +10,30 @@ class PrSynch implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public ?int $page = 1)
-    {
-
-    }
+    public function __construct(public ?int $page = 1) {}
 
     public function handle(): void
     {
-        $url = 'https://api.github.com/repos/laravel/laravel/pulls?state=all&page=';
-        $requestResponse = Http::get($url . $this->page);
+        //prepare the url
+        $url = 'https://api.github.com/repos/laravel/laravel/pulls?state=all&page=' . $this->page;
 
+        //send the request with auth via git psa token to increate rate-limiting
+        $requestResponse = Http::withToken(config('services.github.personal_access_token'))->get($url);
+
+        //convert the request into json
         $request = $requestResponse->json();
 
+        //if the request return an empty array just stop
         if(empty($request)){
             return;
         }
 
-            foreach ($request as $pr) {
-                PullRequestStore::dispatch($pr);
+            //foreach request response dispatch a job which persists each one in database
+            foreach ($request as $pullrequests) {
+                PullRequestStore::dispatch($pullrequests);
             }
-            PrSynch::dispatch($this->page + 1);
+        //the parameter PAGE, that we can sync every page listed
+        PrSynch::dispatch($this->page + 1);
     }
 
 }

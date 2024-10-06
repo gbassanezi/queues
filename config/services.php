@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'github' => [
+        'personal_access_token'=> env('GIT_PSA'),
+    ]
+
 ];

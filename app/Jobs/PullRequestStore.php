@@ -11,19 +11,19 @@ class PullRequestStore implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public array $pr){}
+    public function __construct(public array $pullrequests){}
 
     public function handle(): void
     {
-        PullRequests::create([
-            'api_id' => $this->pr['id'],
-            'api_number' => $this->pr['number'],
-            'state' => $this->pr['state'],
-            'title' => $this->pr['title'],
-            'api_created_at' => Carbon::parse($this->pr['created_at'])->format('Y-m-d H:i:s'),
-            'api_updated_at' => Carbon::parse($this->pr['updated_at'])->format('Y-m-d H:i:s'),
-            'api_closed_at' => Carbon::parse($this->pr['closed_at'])->format('Y-m-d H:i:s'),
-            'api_merged_at' => Carbon::parse($this->pr['merged_at'])->format('Y-m-d H:i:s')
+        PullRequests::updateOrCreate([
+            'api_id' => $this->pullrequests['id'],
+            'api_number' => $this->pullrequests['number'],
+            'state' => $this->pullrequests['state'],
+            'title' => $this->pullrequests['title'],
+            'api_created_at' => Carbon::parse($this->pullrequests['created_at'])->format('Y-m-d H:i:s'),
+            'api_updated_at' => Carbon::parse($this->pullrequests['updated_at'])->format('Y-m-d H:i:s'),
+            'api_closed_at' => Carbon::parse($this->pullrequests['closed_at'])->format('Y-m-d H:i:s'),
+            'api_merged_at' => Carbon::parse($this->pullrequests['merged_at'])->format('Y-m-d H:i:s')
         ]);
     }
 }
