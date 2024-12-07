@@ -10,12 +10,13 @@ class PrSynch implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public ?int $page = 1) {}
+    public function __construct(public string $repository, public ?int $page = 1) {}
 
     public function handle(): void
     {
         //prepare the url
-        $url = 'https://api.github.com/repos/laravel/laravel/pulls?state=all&page=' . $this->page;
+        $url = 'https://api.github.com/repos/'. $this->repository . '/pulls?state=all&page=' . $this->page;
+        dump($url);
 
         //send the request with auth via git psa token to increate rate-limiting
         $requestResponse = Http::withToken(config('services.github.personal_access_token'))->get($url);
@@ -32,8 +33,11 @@ class PrSynch implements ShouldQueue
             foreach ($request as $pullrequests) {
                 PullRequestStore::dispatch($pullrequests);
             }
+
+
+        $mexPage = $this->page + 1;
         //increase the page with the parameter PAGE, so we can sync every page listed
-        PrSynch::dispatch($this->page + 1);
+        PrSynch::dispatch($this->repository, $mexPage);
     }
 
 }
